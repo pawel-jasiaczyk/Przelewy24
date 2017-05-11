@@ -4,12 +4,99 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
+using System.Net.Http;
 
 namespace Przelewy24
 {
     public class Przelewy24
     {
-        public static string TrnRegister = "https://sandbox.przelewy24.pl/trnRegister";
+        #region Static Fields
+
+        private static string protocol = "https://";
+        private static string sandbox = "sandbox";
+        private static string secure = "secure";
+
+        private static string testConnection = ".przelewy24.pl/testConnection";
+        private static string trnRegister = ".przelewy24.pl/trnRegister";
+        private static string trnRequest = ".przelewy24.pl/trnRequest";
+
+        // public static string TrnRegister = "https://sandbox.przelewy24.pl/trnRegister";
+
+        #endregion
+
+        #region Constructors
+        
+        protected Przelewy24()
+        {
+
+        }
+
+        public Przelewy24(string merchantId, string posId, string crcKey, bool sandboxMode)
+        {
+            this.MerchantId = merchantId;
+            this.PosId = posId;
+            this.CrcKey = crcKey;
+            this.SandboxMode = sandboxMode;
+        }
+
+        public Przelewy24(string merchantId, string posId, string crcKey)
+            :this(merchantId, posId, crcKey, false)
+        { }
+       
+        #endregion
+
+
+        #region Properties
+
+        public string MerchantId { get; set; }
+        public string PosId { get; set; }
+        public string CrcKey { get; set; }
+
+        public bool SandboxMode { get; set; }
+
+        public string UrlTrnRegister { get { return GetFirstPartOfUrl() + trnRegister; } }
+        public string UrlTrnRequest { get { return GetFirstPartOfUrl() + trnRequest; } }
+        public string UrlTestConnection { get { return GetFirstPartOfUrl() + testConnection; } }
+
+        #endregion
+
+        #region Public Methods
+
+        public async Task<string> TestConnection()
+        {
+            HttpClient client = new HttpClient();
+            string[] parameters = new string[2] { this.PosId, this.CrcKey };
+            string sign = Przelewy24.CalculateSign(parameters);
+
+            var values = new Dictionary<string, string>()
+            {
+                { "p24_merchant_id", this.MerchantId },
+                { "p24_pos_id", this.PosId },
+                { "p24_sign", sign }
+            };
+
+            var content = new FormUrlEncodedContent(values);
+
+            var response = await client.PostAsync(this.UrlTestConnection, content);
+
+            var responseString = await response.Content.ReadAsStringAsync ();
+
+            return responseString;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private string GetFirstPartOfUrl()
+        {
+            if (this.SandboxMode) return protocol + sandbox;
+            else return protocol + secure;
+        }
+
+        #endregion
+
+        #region Static Methods
 
         protected static string CalculateSign (string[] inputFields, bool ignonreNulls)
         {
@@ -71,5 +158,7 @@ namespace Przelewy24
 
             return stb.ToString ().ToLower();
         }
+
+        #endregion
     }
 }

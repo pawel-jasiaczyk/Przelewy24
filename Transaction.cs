@@ -9,6 +9,8 @@ namespace Przelewy24
 {
     public class Transaction
     {
+        private Przelewy24 parent;
+
         public static ushort TransactionNumber = 1;
         
         public string MerchantId { get; set; }
@@ -30,6 +32,11 @@ namespace Przelewy24
 
         public Transaction(string id, string amount, string currency, string crcKey, string country, string urlReturn, string email)
             :this(id,amount,currency,"",crcKey, country, urlReturn, email)
+        {
+
+        }
+
+        public Transaction(Przelewy24 parent, string amount, string currency, string country, string urlReturn, string email, string sessionId)
         {
 
         }
@@ -77,7 +84,7 @@ namespace Przelewy24
             };
             var content = new FormUrlEncodedContent(values);
 
-            var response = await client.PostAsync (Przelewy24.TrnRegister, content);
+            var response = await client.PostAsync (parent.UrlTrnRegister, content);
 
             string responseString = await response.Content.ReadAsStringAsync ();
 
