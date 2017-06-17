@@ -20,8 +20,6 @@ namespace Przelewy24
         private static string trnRegister = ".przelewy24.pl/trnRegister";
         private static string trnRequest = ".przelewy24.pl/trnRequest";
 
-        // public static string TrnRegister = "https://sandbox.przelewy24.pl/trnRegister";
-
         #endregion
 
         #region Constructors
@@ -98,6 +96,8 @@ namespace Przelewy24
 
         #region Static Methods
 
+        #region Sign Methods
+
         protected static string CalculateSign (string[] inputFields, bool ignonreNulls)
         {
             StringBuilder stb = new StringBuilder ();
@@ -158,6 +158,8 @@ namespace Przelewy24
 
             return stb.ToString ().ToLower();
         }
+
+        #endregion
 
         #endregion
     }

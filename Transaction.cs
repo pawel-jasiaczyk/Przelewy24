@@ -9,79 +9,167 @@ namespace Przelewy24
 {
     public class Transaction
     {
-        private Przelewy24 parent;
+        #region Static Fields
 
         public static ushort TransactionNumber = 1;
-        
-        public string MerchantId { get; set; }
-        public string PosId { get; set; }
-        public string Amount { get; set; }
-        public string Currency { get; set; }
-        public string SessionId { get; set; }
-        public string CrcKey { get; set; }
-        public string Country { get; set; }
-        public string UrlReturn { get; set; }
-        public string ApiVersion { get { return "3.2"; } }
-        public string Description { get; set; }
-        public string Email { get; set; }
+
+        #endregion
+
+
+        #region Private fields
+
+        private Przelewy24 parent;
+        private List<Parameter> parameters;
+
+        #endregion
+
+
+        #region Properties
+        // Transaction data
+        public string P24_session_id
+        {
+            get { return GetParameter ("p24_session_id"); }
+            set { SetParameter ("p24_session_id", value); }
+        }
+        public string P24_amount 
+        {
+            get { return GetParameter ("p24_amount"); }
+            set { SetParameter ("p24_amount", value); } 
+        }
+        public string P24_currency 
+        {
+            get { return GetParameter ("p24_currency"); }
+            set { SetParameter ("p24_currency", value); }
+        }
+        public string P24_description 
+        {
+            get { return GetParameter ("p24_description"); }
+            set { SetParameter ("p24_description", value); } 
+        }
+        public string P24_email 
+        {
+            get { return GetParameter ("p24_email"); }
+            set { SetParameter ("p24_email", value); }
+        }
+        public string P24_country 
+        {
+            get { return GetParameter ("p24_country"); }
+            set { SetParameter ("p24_country", value); }
+        }
+        public string P24_url_return 
+        {
+            get { return GetParameter ("p24_url_return"); }
+            set { SetParameter ("p24_url_return", value); }
+        }
+        public string P24_api_version 
+        { 
+            get { return GetParameter("p24_api_version"); } 
+        }
 
         public string SessionIdAdditionalData { get; set; }
         public ushort ThisTransactionNumber { get; set; }
 
-        private List<Parameter> parameters;
+        public string ShortOrderId { get; private set;}
+        public string FullOrderId { get; private set; }
 
-        public Transaction(string id, string amount, string currency, string crcKey, string country, string urlReturn, string email)
-            :this(id,amount,currency,"",crcKey, country, urlReturn, email)
-        {
-
+        public string RegisterSign 
+        { 
+            get 
+            {
+                return Przelewy24.CalculateRegisterSign (
+                    this.P24_session_id, 
+                    parent.MerchantId, 
+                    this.P24_amount, 
+                    this.P24_currency, 
+                    parent.CrcKey
+                 );
+            } 
         }
 
-        public Transaction(Przelewy24 parent, string amount, string currency, string country, string urlReturn, string email, string sessionId)
-        {
+        #endregion
 
-        }
 
-        public Transaction
-            (string id, string amount, string currency, string sessionId, string crcKey, string country, string urlReturn, string email)
-            : this()
-        {
-            this.MerchantId = id;
-            this.PosId = id;
-            this.Amount = amount;
-            this.Currency = currency;
-            this.SessionId = sessionId;
-            this.CrcKey = crcKey;
-            this.Email = email;
-            this.UrlReturn = urlReturn;
-            this.ThisTransactionNumber = Transaction.TransactionNumber;
-            TransactionNumber++;
-        }
+        #region Constructors
 
         private Transaction()
         {
             this.parameters = new List<Parameter> ();
+            this.SetParameter ("p24_api_version", "3.2");
         }
+
+        public Transaction (
+            // merchant account data
+            Przelewy24 parent, 
+            // transaction data
+            SessionIdGenerationMode generationMode,
+            string sessionId,
+            string amount, 
+            string currency, 
+            string description,
+            string email, 
+            string country, 
+            string urlReturn 
+            )
+            :this()
+        {
+            this.parent = parent;
+
+            SetUniqueSessionId (generationMode, sessionId);
+            this.P24_amount = amount;
+            this.P24_currency = currency;
+            this.P24_description = description;
+            this.P24_email = email;
+            this.P24_country = country;
+            this.P24_url_return = urlReturn;
+        }
+
+        public Transaction (
+            // merchant data
+            string merchantId,
+            string posId,
+            string crcKey,
+            bool sandboxMode,
+            // transaction data
+            SessionIdGenerationMode generationMode,
+            string sessionId,
+            string amount, 
+            string currency, 
+            string description,
+            string email, 
+            string country, 
+            string urlReturn 
+            )
+            :this(
+                new Przelewy24(merchantId, posId, crcKey, sandboxMode),
+                generationMode, sessionId,amount,currency,description,email,country,urlReturn
+            )
+        { }
+
+        
+
+        #endregion
+
+
+        #region Server connection methods
 
         public async Task<string> RegisterTransaction()
         {
             HttpClient client = new HttpClient();
             string sign = 
                 Przelewy24.CalculateRegisterSign 
-                (this.SessionId, this.MerchantId, this.Amount, this.Currency, this.CrcKey);
+                (this.P24_session_id, parent.PosId, this.P24_amount, this.P24_currency, parent.CrcKey);
             var values = new Dictionary<string, string> ()
             {
-                {"p24_merchant_id", this.MerchantId },
-                {"p24_pos_id", this.PosId },
-                {"p24_session_id", this.SessionId },
-                {"p24_amount", this.Amount },
-                {"p24_currency", this.Currency },
-                {"p24_description", this.Description },
-                {"p24_email", this.Email },
-                {"p24_country", this.Country },
-                {"p24_url_return", this.UrlReturn },
-                {"p24_api_version", this.ApiVersion },
+                {"p24_merchant_id", parent.MerchantId },
+                {"p24_pos_id", parent.PosId },
                 {"p24_sign", sign}
             };
+
+            foreach(Parameter param in this.parameters)
+            {
+                values.Add (param.Name, param.Value);
+            }
+
             var content = new FormUrlEncodedContent(values);
 
             var response = await client.PostAsync (parent.UrlTrnRegister, content);
@@ -91,25 +179,84 @@ namespace Przelewy24
             return responseString;
         }
 
-        public void SetUniqueSessionId(SessionIdGenerationMode mode)
+        #endregion
+
+
+        #region Session Id methods
+
+        private string GetUniqueSessionId()
         {
             StringBuilder stb = new StringBuilder ();
-            switch(mode)
-            {
-                case SessionIdGenerationMode.random:
-                {
-                    stb.Append (DateTime.Now.Ticks.ToString ());
-                    stb.Append ('_');
-                    stb.Append (this.ThisTransactionNumber);
-                    this.SessionId = stb.ToString ();
-                    break;
-                }
-            }
+            stb.Append (DateTime.Now.Ticks.ToString ());
+            stb.Append ('|');
+            stb.Append (this.ThisTransactionNumber);
+            return stb.ToString ();
         }
 
         public void SetUniqueSessionId(SessionIdGenerationMode mode, string sessionIdAdditionalData)
         {
             this.SessionIdAdditionalData = sessionIdAdditionalData;
+            switch(mode)
+            {
+                case SessionIdGenerationMode.time:
+                {
+                    this.P24_session_id = GetUniqueSessionId ();
+                    break;
+                }
+                case SessionIdGenerationMode.addPostfix:
+                {
+                    this.P24_session_id = GetUniqueSessionId () + "|" + sessionIdAdditionalData;
+                    break;
+                }
+                case SessionIdGenerationMode.addPrefix:
+                {
+                    this.P24_session_id = sessionIdAdditionalData + "|" + GetUniqueSessionId();
+                    break;
+                }
+                case SessionIdGenerationMode.md5:
+                {
+                    this.P24_session_id = Przelewy24.CalculateMD5Hash (GetUniqueSessionId ());
+                    break;
+                }
+                case SessionIdGenerationMode.plain:
+                {
+                    this.P24_session_id = sessionIdAdditionalData;
+                    break;
+                }
+            }
         }
+
+        #endregion
+        
+
+        #region Parameters methods
+
+        public string GetParameter(string parameterName)
+        {
+            var result = this.parameters.Select (n => n).Where (n => n.Name == parameterName).FirstOrDefault ();
+            if (result != null)
+                return result.Value;
+            else return null;
+        }
+
+
+        public void SetParameter(string parameterName, string parameterValue)
+        {
+            var result = this.parameters.Select (n => n).Where (n => n.Name == parameterName).FirstOrDefault ();
+            if (result != null)
+                result.Value = parameterValue;
+            else
+                this.parameters.Add (new Parameter (parameterName, parameterValue));
+        }
+
+
+        public void RemoveParameter (string parameterName)
+        {
+            var result = this.parameters.Select (n => n).Where (n => n.Name == parameterName).FirstOrDefault ();
+            if (result != null)
+                this.parameters.Remove (result);
+        }
+        
+        #endregion
     }
 }

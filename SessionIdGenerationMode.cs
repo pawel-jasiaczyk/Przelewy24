@@ -8,10 +8,10 @@ namespace Przelewy24
 {
     public enum SessionIdGenerationMode
     {
+        time,
         plain,
         addPrefix,
         addPostfix,
-        md5,
-        random,
+        md5
     }
 }
