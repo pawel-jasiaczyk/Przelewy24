@@ -19,7 +19,7 @@ namespace Przelewy24
         #region Private fields
 
         private Przelewy24 parent;
-        private List<Parameter> parameters;
+        private List<IParameter> parameters;
 
         #endregion
 
@@ -32,64 +32,64 @@ namespace Przelewy24
         // Basic parameters
         public string P24_session_id
         {
-            get { return GetParameter ("p24_session_id"); }
-            set { SetParameter ("p24_session_id", value); }
+            get { return GetParameter<string> ("p24_session_id"); }
+            set { SetParameter<string> ("p24_session_id", value); }
         }
-        public string P24_amount 
+        public int P24_amount 
         {
-            get { return GetParameter ("p24_amount"); }
-            set { SetParameter ("p24_amount", value); } 
+            get { return GetParameter<int> ("p24_amount"); }
+            set { SetParameter<int> ("p24_amount", value); } 
         }
         public string P24_currency 
         {
-            get { return GetParameter ("p24_currency"); }
-            set { SetParameter ("p24_currency", value); }
+            get { return GetParameter<string> ("p24_currency"); }
+            set { SetParameter<string> ("p24_currency", value); }
         }
         public string P24_description 
         {
-            get { return GetParameter ("p24_description"); }
-            set { SetParameter ("p24_description", value); } 
+            get { return GetParameter<string> ("p24_description"); }
+            set { SetParameter<string> ("p24_description", value); } 
         }
         public string P24_email 
         {
-            get { return GetParameter ("p24_email"); }
-            set { SetParameter ("p24_email", value); }
+            get { return GetParameter<string> ("p24_email"); }
+            set { SetParameter<string> ("p24_email", value); }
         }
         public string P24_country 
         {
-            get { return GetParameter ("p24_country"); }
-            set { SetParameter ("p24_country", value); }
+            get { return GetParameter<string> ("p24_country"); }
+            set { SetParameter<string> ("p24_country", value); }
         }
         public string P24_url_return 
         {
-            get { return GetParameter ("p24_url_return"); }
-            set { SetParameter ("p24_url_return", value); }
+            get { return GetParameter<string> ("p24_url_return"); }
+            set { SetParameter<string> ("p24_url_return", value); }
         }
         public string P24_api_version 
         { 
-            get { return GetParameter("p24_api_version"); } 
+            get { return GetParameter<string>("p24_api_version"); } 
         }
 
         // Parameters requied for credit card transactions
         public string P24_client 
         {
-            get { return GetParameter ("p24_client"); }
-            set { SetParameter ("p24_client", value); }
+            get { return GetParameter<string> ("p24_client"); }
+            set { SetParameter<string> ("p24_client", value); }
         }
         public string P24_address 
         {
-            get { return GetParameter ("p24_address"); }
-            set { SetParameter ("p24_address", value); }
+            get { return GetParameter<string> ("p24_address"); }
+            set { SetParameter<string> ("p24_address", value); }
         }
         public string P24_zip 
         {
-            get { return GetParameter ("p24_zip"); }
-            set { SetParameter ("p24_zip", value); }
+            get { return GetParameter<string> ("p24_zip"); }
+            set { SetParameter<string> ("p24_zip", value); }
         }
         public string P24_city 
         {
-            get { return GetParameter ("p24_city"); }
-            set { SetParameter ("p24_city", value); } 
+            get { return GetParameter<string> ("p24_city"); }
+            set { SetParameter<string> ("p24_city", value); } 
         }
 
         // Non-basic parameters
@@ -114,7 +114,7 @@ namespace Przelewy24
                 return Przelewy24.CalculateRegisterSign (
                     this.P24_session_id, 
                     parent.MerchantId, 
-                    this.P24_amount, 
+                    this.P24_amount.ToString(), 
                     this.P24_currency, 
                     parent.CrcKey
                  );
@@ -128,7 +128,7 @@ namespace Przelewy24
 
         private Transaction()
         {
-            this.parameters = new List<Parameter> ();
+            this.parameters = new List<IParameter> ();
             this.SetParameter ("p24_api_version", "3.2");
         }
 
@@ -138,7 +138,7 @@ namespace Przelewy24
             // transaction data
             SessionIdGenerationMode generationMode,
             string sessionId,
-            string amount, 
+            int amount, 
             string currency, 
             string description,
             string email, 
@@ -167,7 +167,7 @@ namespace Przelewy24
             // transaction data
             SessionIdGenerationMode generationMode,
             string sessionId,
-            string amount, 
+            int amount, 
             string currency, 
             string description,
             string email, 
@@ -192,7 +192,7 @@ namespace Przelewy24
             HttpClient client = new HttpClient();
             string sign = 
                 Przelewy24.CalculateRegisterSign 
-                (this.P24_session_id, parent.PosId, this.P24_amount, this.P24_currency, parent.CrcKey);
+                (this.P24_session_id, parent.PosId, this.P24_amount.ToString(), this.P24_currency, parent.CrcKey);
             var values = new Dictionary<string, string> ()
             {
                 {"p24_merchant_id", parent.MerchantId },
@@ -200,9 +200,9 @@ namespace Przelewy24
                 {"p24_sign", sign}
             };
 
-            foreach(Parameter param in this.parameters)
+            foreach(IParameter param in this.parameters)
             {
-                values.Add (param.Name, param.Value);
+                values.Add (param.Name, param.StringValue);
             }
 
             var content = new FormUrlEncodedContent(values);
@@ -266,22 +266,30 @@ namespace Przelewy24
 
         #region Parameters methods
 
-        public string GetParameter(string parameterName)
+        public T GetParameter<T>(string parameterName)
         {
             var result = this.parameters.Select (n => n).Where (n => n.Name == parameterName).FirstOrDefault ();
             if (result != null)
-                return result.Value;
-            else return null;
+            {
+                return ((Parameter<T>)result).Value;
+            }
+            else
+            {
+                return default(T);
+            }
         }
 
 
-        public void SetParameter(string parameterName, string parameterValue)
+        public void SetParameter<T>(string parameterName, T parameterValue)
         {
             var result = this.parameters.Select (n => n).Where (n => n.Name == parameterName).FirstOrDefault ();
             if (result != null)
-                result.Value = parameterValue;
+            {
+                var r = (Parameter<T>)result;
+                r.Value = parameterValue;
+            }
             else
-                this.parameters.Add (new Parameter (parameterName, parameterValue));
+                this.parameters.Add (new Parameter<T> (parameterName, parameterValue));
         }
 
 
