@@ -25,7 +25,11 @@ namespace Przelewy24
 
 
         #region Properties
+        
+        //
         // Transaction data
+        //
+        // Basic parameters
         public string P24_session_id
         {
             get { return GetParameter ("p24_session_id"); }
@@ -66,12 +70,43 @@ namespace Przelewy24
             get { return GetParameter("p24_api_version"); } 
         }
 
+        // Parameters requied for credit card transactions
+        public string P24_client 
+        {
+            get { return GetParameter ("p24_client"); }
+            set { SetParameter ("p24_client", value); }
+        }
+        public string P24_address 
+        {
+            get { return GetParameter ("p24_address"); }
+            set { SetParameter ("p24_address", value); }
+        }
+        public string P24_zip 
+        {
+            get { return GetParameter ("p24_zip"); }
+            set { SetParameter ("p24_zip", value); }
+        }
+        public string P24_city 
+        {
+            get { return GetParameter ("p24_city"); }
+            set { SetParameter ("p24_city", value); } 
+        }
+
+        // Non-basic parameters
+
+
+        //
+        // Additional data
+        //
+        // Additional merchant data
         public string SessionIdAdditionalData { get; set; }
         public ushort ThisTransactionNumber { get; set; }
 
+        // Confirmation data
         public string ShortOrderId { get; private set;}
         public string FullOrderId { get; private set; }
 
+        // Generated data
         public string RegisterSign 
         { 
             get 
