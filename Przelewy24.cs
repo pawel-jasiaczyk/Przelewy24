@@ -25,8 +25,8 @@ namespace Przelewy24
 
         #region Properties
 
-        public string MerchantId { get; set; }
-        public string PosId { get; set; }
+        public int MerchantId { get; set; }
+        public int PosId { get; set; }
         public string CrcKey { get; set; }
 
         public bool SandboxMode { get; set; }
@@ -45,28 +45,47 @@ namespace Przelewy24
 
         }
 
-
+        /// <summary>
+        /// Create instance of Przelewy24 class
+        /// This constructor was created in early version of project and will be removed
+        /// in final version
+        /// </summary>
+        /// <param name="merchantId"></param>
+        /// <param name="posId"></param>
+        /// <param name="crcKey"></param>
+        /// <param name="sandboxMode"></param>
+        [Obsolete]
         public Przelewy24(string merchantId, string posId, string crcKey, bool sandboxMode)
-        {
-            this.MerchantId = merchantId;
-            this.PosId = posId;
-            this.CrcKey = crcKey;
-            this.SandboxMode = sandboxMode;
-        }
+            :this(int.Parse(merchantId), int.Parse(posId), crcKey, sandboxMode)
+        { }
 
-
+        
+        /// <summary>
+        /// Create instance of Przelewy24 class
+        /// This constructor was created in early version of project and will be removed
+        /// in final version
+        /// </summary>
+        /// <param name="merchantId"></param>
+        /// <param name="posId"></param>
+        /// <param name="crcKey"></param>
+        [Obsolete]
         public Przelewy24(string merchantId, string posId, string crcKey)
             :this(merchantId, posId, crcKey, false)
         { }
        
 
         public Przelewy24(int merchantId, int posId, string crcKey)
-            :this (merchantId.ToString(), posId.ToString(), crcKey)
+            :this (merchantId, posId, crcKey, false)
         { }
 
+
         public Przelewy24(int merchantId, int posId, string crcKey, bool sandboxMode)
-            :this (merchantId.ToString(), posId.ToString(), crcKey, sandboxMode)
-        { }
+        {
+            this.MerchantId = merchantId;
+            this.PosId = posId;
+            this.CrcKey = crcKey;
+            this.SandboxMode = sandboxMode;
+        }
 
         #endregion
 
@@ -76,13 +95,13 @@ namespace Przelewy24
         public async Task<string> TestConnection()
         {
             HttpClient client = new HttpClient();
-            string[] parameters = new string[2] { this.PosId, this.CrcKey };
+            string[] parameters = new string[2] { this.PosId.ToString(), this.CrcKey };
             string sign = Przelewy24.CalculateSign(parameters);
 
             var values = new Dictionary<string, string>()
             {
-                { "p24_merchant_id", this.MerchantId },
-                { "p24_pos_id", this.PosId },
+                { "p24_merchant_id", this.MerchantId.ToString() },
+                { "p24_pos_id", this.PosId.ToString() },
                 { "p24_sign", sign }
             };
 
@@ -132,6 +151,7 @@ namespace Przelewy24
             return CalculateMD5Hash (stb.ToString ());
         }
 
+
         /// <summary>
         /// Calculate sign in p24 style.
         /// I.E. create string from input fields separated by '|' character
@@ -147,11 +167,6 @@ namespace Przelewy24
             return CalculateSign(inputFields, false);
         }
 
-        public static string CalculateRegisterSign(string sessionId, string merchantId, string amount, string currency, string crcKey)
-        {
-            string[] data = new string[5] { sessionId, merchantId, amount, currency, crcKey };
-            return CalculateSign (data);
-        }
 
         /// <summary>
         /// Calclate MD5 hash from input string.
@@ -173,6 +188,26 @@ namespace Przelewy24
 
             return stb.ToString ().ToLower();
         }
+
+
+        #region Register Sign
+
+        public static string CalculateRegisterSign
+                   (string sessionId, string merchantId, string amount, string currency, string crcKey)
+        {
+            string[] data = new string[5] { sessionId, merchantId, amount, currency, crcKey };
+            return CalculateSign(data);
+        }
+
+
+        public static string CalculateRegisterSign
+                   (string sessionId, int merchantId, int amount, string currency, string crcKey)
+        {
+            return CalculateRegisterSign(sessionId, merchantId.ToString(), amount.ToString(), currency, crcKey);
+        }
+
+
+        #endregion
 
         #endregion
 

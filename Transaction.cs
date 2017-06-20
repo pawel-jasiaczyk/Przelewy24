@@ -114,7 +114,7 @@ namespace Przelewy24
                 return Przelewy24.CalculateRegisterSign (
                     this.P24_session_id, 
                     parent.MerchantId, 
-                    this.P24_amount.ToString(), 
+                    this.P24_amount, 
                     this.P24_currency, 
                     parent.CrcKey
                  );
@@ -131,6 +131,7 @@ namespace Przelewy24
             this.parameters = new List<IParameter> ();
             this.SetParameter ("p24_api_version", "3.2");
         }
+
 
         public Transaction (
             // merchant account data
@@ -158,10 +159,52 @@ namespace Przelewy24
             this.P24_url_return = urlReturn;
         }
 
+
+        /// <summary>
+        /// Create transaction and associated Przelewy24 class
+        /// This Constructor was created in early version of project and
+        /// will be removed in final version
+        /// </summary>
+        /// <param name="merchantId"></param>
+        /// <param name="posId"></param>
+        /// <param name="crcKey"></param>
+        /// <param name="sandboxMode"></param>
+        /// <param name="generationMode"></param>
+        /// <param name="sessionId"></param>
+        /// <param name="amount"></param>
+        /// <param name="currency"></param>
+        /// <param name="description"></param>
+        /// <param name="email"></param>
+        /// <param name="country"></param>
+        /// <param name="urlReturn"></param>
+        [Obsolete]
         public Transaction (
             // merchant data
             string merchantId,
             string posId,
+            string crcKey,
+            bool sandboxMode,
+            // transaction data
+            SessionIdGenerationMode generationMode,
+            string sessionId,
+            int amount, 
+            string currency, 
+            string description,
+            string email, 
+            string country, 
+            string urlReturn 
+            )
+            :this(
+                new Przelewy24(merchantId, posId, crcKey, sandboxMode),
+                generationMode, sessionId,amount,currency,description,email,country,urlReturn
+            )
+        { }
+
+
+        public Transaction (
+            // merchant data
+            int merchantId,
+            int posId,
             string crcKey,
             bool sandboxMode,
             // transaction data
@@ -192,11 +235,11 @@ namespace Przelewy24
             HttpClient client = new HttpClient();
             string sign = 
                 Przelewy24.CalculateRegisterSign 
-                (this.P24_session_id, parent.PosId, this.P24_amount.ToString(), this.P24_currency, parent.CrcKey);
+                (this.P24_session_id, parent.PosId, this.P24_amount, this.P24_currency, parent.CrcKey);
             var values = new Dictionary<string, string> ()
             {
-                {"p24_merchant_id", parent.MerchantId },
-                {"p24_pos_id", parent.PosId },
+                {"p24_merchant_id", parent.MerchantId.ToString() },
+                {"p24_pos_id", parent.PosId.ToString() },
                 {"p24_sign", sign}
             };
 
