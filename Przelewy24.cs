@@ -22,6 +22,22 @@ namespace Przelewy24
 
         #endregion
 
+
+        #region Properties
+
+        public string MerchantId { get; set; }
+        public string PosId { get; set; }
+        public string CrcKey { get; set; }
+
+        public bool SandboxMode { get; set; }
+
+        public string UrlTrnRegister { get { return GetFirstPartOfUrl() + trnRegister; } }
+        public string UrlTrnRequest { get { return GetFirstPartOfUrl() + trnRequest; } }
+        public string UrlTestConnection { get { return GetFirstPartOfUrl() + testConnection; } }
+
+        #endregion
+
+
         #region Constructors
         
         protected Przelewy24()
@@ -55,20 +71,6 @@ namespace Przelewy24
         #endregion
 
 
-        #region Properties
-
-        public string MerchantId { get; set; }
-        public string PosId { get; set; }
-        public string CrcKey { get; set; }
-
-        public bool SandboxMode { get; set; }
-
-        public string UrlTrnRegister { get { return GetFirstPartOfUrl() + trnRegister; } }
-        public string UrlTrnRequest { get { return GetFirstPartOfUrl() + trnRequest; } }
-        public string UrlTestConnection { get { return GetFirstPartOfUrl() + testConnection; } }
-
-        #endregion
-
         #region Public Methods
 
         public async Task<string> TestConnection()
@@ -95,6 +97,7 @@ namespace Przelewy24
 
         #endregion
 
+
         #region Private Methods
 
         private string GetFirstPartOfUrl()
@@ -104,6 +107,7 @@ namespace Przelewy24
         }
 
         #endregion
+
 
         #region Static Methods
 
