@@ -29,6 +29,7 @@ namespace Przelewy24
 
         }
 
+
         public Przelewy24(string merchantId, string posId, string crcKey, bool sandboxMode)
         {
             this.MerchantId = merchantId;
@@ -37,10 +38,20 @@ namespace Przelewy24
             this.SandboxMode = sandboxMode;
         }
 
+
         public Przelewy24(string merchantId, string posId, string crcKey)
             :this(merchantId, posId, crcKey, false)
         { }
        
+
+        public Przelewy24(int merchantId, int posId, string crcKey)
+            :this (merchantId.ToString(), posId.ToString(), crcKey)
+        { }
+
+        public Przelewy24(int merchantId, int posId, string crcKey, bool sandboxMode)
+            :this (merchantId.ToString(), posId.ToString(), crcKey, sandboxMode)
+        { }
+
         #endregion
 
 
