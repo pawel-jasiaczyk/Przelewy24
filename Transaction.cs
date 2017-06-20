@@ -93,6 +93,61 @@ namespace Przelewy24
         }
 
         // Non-basic parameters
+        public string P24_phone
+        {
+            get { return this.GetParameter<string>("p24_phone"); }
+            set { this.SetParameter<string>("p24_phone", value); }
+        } // string(12)
+        public string P24_language
+        {
+            get { return this.GetParameter<string>("p24_language"); }
+            set { this.SetParameter<string>("p24_language", value); }
+        } // string(2)
+        public int P24_method
+        {
+            get { return this.GetParameter<int>("p24_method"); }
+            set { this.SetParameter<int>("p24_method", value); }
+        } // int
+        public string P24_url_status
+        {
+            get { return this.GetParameter<string>("p24_url_status"); }
+            set { this.SetParameter<string>("p24_url_status", value); }
+        } // string(250)   STATUS
+        public int P24_time_limit
+        {
+            get { return this.GetParameter<int>("p24_time_limit"); }
+            set { this.SetParameter<int>("p24_time_limit", value); }
+        } // int
+        public int P24_wait_for_result
+        {
+            get { return this.GetParameter<int>("p24_wait_for_result"); }
+            set { this.SetParameter<int>("p24_wait_for_result", value); }
+        } // int
+        public int P24_channel
+        {
+            get { return this.GetParameter<int>("p24_channel"); }
+            set { this.SetParameter<int>("p24_channel", value); }
+        } // int
+        public string P24_transfer_label
+        {
+            get { return this.GetParameter<string>("p24_transfer_label"); }
+            set { this.SetParameter<string>("p24_transfer_label", value); }
+        } // string(20)
+        public string P24_encoding
+        {
+            get { return this.GetParameter<string>("p24_encoding"); }
+            set { this.SetParameter<string>("p24_encoding", value); }
+        } // string(15)
+        
+        // Basket
+
+        // p24_shipping int KOSZYK
+
+        // p24_name_X string(127)
+        // p24_description string(127)
+        // p24_quantity_X int
+        // p24_price_X int
+        // p24_number_X int
 
 
         //
