@@ -40,7 +40,7 @@ namespace Przelewy24
 
         #region Constructors
         
-        protected Przelewy24()
+        public Przelewy24()
         {
 
         }
