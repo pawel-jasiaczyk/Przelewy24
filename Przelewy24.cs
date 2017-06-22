@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.Net.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace Przelewy24
 {
@@ -25,8 +26,11 @@ namespace Przelewy24
 
         #region Properties
 
+        [Required(ErrorMessage="MerchantId is nessessary")]
         public int MerchantId { get; set; }
+        [Required(ErrorMessage="PosId is nessessary")]
         public int PosId { get; set; }
+        [Required(ErrorMessage="CrcKey is nessessary")]
         public string CrcKey { get; set; }
 
         public bool SandboxMode { get; set; }
@@ -42,7 +46,10 @@ namespace Przelewy24
         
         public Przelewy24()
         {
-
+            this.MerchantId = 0;
+            this.PosId = 0;
+            this.CrcKey = "";
+            this.SandboxMode = false;
         }
 
         /// <summary>
@@ -210,6 +217,7 @@ namespace Przelewy24
         #endregion
 
         #endregion
+
 
         #endregion
     }

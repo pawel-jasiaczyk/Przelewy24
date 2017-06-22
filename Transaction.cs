@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace Przelewy24
 {
@@ -30,36 +31,43 @@ namespace Przelewy24
         // Transaction data
         //
         // Basic parameters
+        [Required(ErrorMessage="SesssionId is nessessary")]
         public string P24_session_id
         {
             get { return GetParameter<string> ("p24_session_id"); }
             set { SetParameter<string> ("p24_session_id", value); }
         }
+        [Required(ErrorMessage="Amount is nessessary")]
         public int P24_amount 
         {
             get { return GetParameter<int> ("p24_amount"); }
             set { SetParameter<int> ("p24_amount", value); } 
         }
+        [Required(ErrorMessage="Currency is nessessary")]
         public string P24_currency 
         {
             get { return GetParameter<string> ("p24_currency"); }
             set { SetParameter<string> ("p24_currency", value); }
         }
+        [Required(ErrorMessage="description is nessessary")]
         public string P24_description 
         {
             get { return GetParameter<string> ("p24_description"); }
             set { SetParameter<string> ("p24_description", value); } 
         }
+        [Required(ErrorMessage="Email is nessessary")]
         public string P24_email 
         {
             get { return GetParameter<string> ("p24_email"); }
             set { SetParameter<string> ("p24_email", value); }
         }
+        [Required(ErrorMessage="Country is nessessary")]
         public string P24_country 
         {
             get { return GetParameter<string> ("p24_country"); }
             set { SetParameter<string> ("p24_country", value); }
         }
+        [Required(ErrorMessage="return address is nessessary")]
         public string P24_url_return 
         {
             get { return GetParameter<string> ("p24_url_return"); }
@@ -176,15 +184,25 @@ namespace Przelewy24
             } 
         }
 
+        public Przelewy24 P24 
+        { 
+            get { return this.parent; }
+            set { this.parent = value; }
+        }
+
         #endregion
 
 
         #region Constructors
 
-        private Transaction()
+        // Must move nessessary operations to another function
+        // and leave Default Constructor for MVC
+        public Transaction()
         {
             this.parameters = new List<IParameter> ();
             this.SetParameter ("p24_api_version", "3.2");
+            this.parent = new Przelewy24();
+            SetUniqueSessionId(SessionIdGenerationMode.time, "");
         }
 
 
