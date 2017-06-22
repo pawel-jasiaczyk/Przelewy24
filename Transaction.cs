@@ -166,8 +166,8 @@ namespace Przelewy24
         public ushort ThisTransactionNumber { get; set; }
 
         // Confirmation data
-        public string ShortOrderId { get; private set;}
-        public string FullOrderId { get; private set; }
+        public int ShortOrderId { get; set;}
+        public int FullOrderId { get; set; }
 
         // Generated data
         public string RegisterSign 
