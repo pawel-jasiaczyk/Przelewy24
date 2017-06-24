@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IP24Db.cs" />
     <Compile Include="Parameter.cs" />
     <Compile Include="Przelewy24.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
