@@ -8,7 +8,6 @@ namespace Przelewy24
 {
     public interface IP24Db
     {
-        void SaveTransaction (Transaction transaction);
         Transaction GetTransaction (string sessionId);
     }
 }
