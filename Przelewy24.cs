@@ -11,6 +11,9 @@ namespace Przelewy24
 {
     public class Przelewy24
     {
+        private static int numberOfINstances = 0;
+        public int InstanceNumber { get; private set; }
+
         #region Static Fields
 
         private static string protocol = "https://";
@@ -54,6 +57,9 @@ namespace Przelewy24
             this.PosId = 0;
             this.CrcKey = "";
             this.SandboxMode = false;
+
+            numberOfINstances++;
+            this.InstanceNumber = numberOfINstances;
         }
 
         /// <summary>

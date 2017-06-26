@@ -12,7 +12,7 @@ namespace Przelewy24
     {
         #region Static Fields
 
-        public static ushort TransactionNumber = 1;
+        public static ushort TransactionsNumber = 0;
 
         #endregion
 
@@ -190,21 +190,35 @@ namespace Przelewy24
             set { this.parent = value; }
         }
 
+        public P24Response P24Response { get; private set; }
+
         #endregion
 
 
         #region Constructors
 
-        // Must move nessessary operations to another function
-        // and leave Default Constructor for MVC
-        public Transaction()
+        private void AllConstructorsOperations()
         {
             this.parameters = new List<IParameter> ();
             this.SetParameter ("p24_api_version", "3.2");
-            this.parent = new Przelewy24();
-            SetUniqueSessionId(SessionIdGenerationMode.time, "");
+            TransactionsNumber++;
+            this.ThisTransactionNumber = TransactionsNumber;
         }
 
+
+        // Must move nessessary operations to another function
+        // and leave Default Constructor for MVC
+        public Transaction()
+            :this(new Przelewy24())
+        {
+        }
+        
+        public Transaction(Przelewy24 przelewy24)
+        {
+            AllConstructorsOperations();
+            this.parent = przelewy24; 
+            SetUniqueSessionId(SessionIdGenerationMode.time, "");
+        }
 
         public Transaction (
             // merchant account data
@@ -219,8 +233,8 @@ namespace Przelewy24
             string country, 
             string urlReturn 
             )
-            :this()
         {
+            AllConstructorsOperations();
             this.parent = parent;
 
             SetUniqueSessionId (generationMode, sessionId);
@@ -328,6 +342,40 @@ namespace Przelewy24
             string responseString = await response.Content.ReadAsStringAsync ();
 
             return responseString;
+        }
+
+        public async Task<P24Response> RegisterTransaction(bool SaveToDatabase)
+        {
+            string respString = await RegisterTransaction();
+            P24Response p24Resp = new P24Response(respString);
+            if (SaveToDatabase)
+            {
+                if (this.P24.TransactionDb == null)
+                {
+                    throw new ApplicationException("Database is not set");
+                }
+                else
+                {
+                    try
+                    {
+                        if (p24Resp.OK)
+                        {
+                            this.P24.TransactionDb.SaveTransaction(this);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        throw;
+                    }
+                }
+            }
+            this.P24Response = p24Resp;
+            return p24Resp;
+        }
+
+        public string GetRequestLink()
+        {
+            return this.P24.UrlTrnRequest + "/" + this.P24Response.Token;
         }
 
         #endregion
