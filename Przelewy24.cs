@@ -11,10 +11,13 @@ namespace Przelewy24
 {
     public class Przelewy24
     {
-        private static int numberOfINstances = 0;
-        public int InstanceNumber { get; private set; }
 
         #region Static Fields
+
+        [Obsolete]
+        private static int numberOfINstances = 0;
+        [Obsolete]
+        public int InstanceNumber { get; private set; }
 
         private static string protocol = "https://";
         private static string sandbox = "sandbox";
@@ -24,25 +27,78 @@ namespace Przelewy24
         private static string trnRegister = ".przelewy24.pl/trnRegister";
         private static string trnRequest = ".przelewy24.pl/trnRequest";
         private static string trnVerify = ".przelewy24.pl/trnVerify";
+        private static string trnDirect = ".przelewy24.pl/trnDirect";
 
         #endregion
 
 
         #region Properties
 
+        /// <summary>
+        /// Merchant Id - reqired
+        /// It will be send in every transaction registration as p24_merchant_id
+        /// This is a value of merchant's account identificator
+        /// It should have same value as PosId
+        /// </summary>
         [Required(ErrorMessage="MerchantId is nessessary")]
         public int MerchantId { get; set; }
+        /// <summary>
+        /// Pos Id - required
+        /// It will be send in every transaction registration as p24_pos_id
+        /// This is a value of merchant's account identificator
+        /// It should have same value as Merchant Id 
+        /// </summary>
         [Required(ErrorMessage="PosId is nessessary")]
         public int PosId { get; set; }
+        /// <summary>
+        /// Crc key
+        /// It will be used for calculation of p24_sign in every
+        /// transaction registration and transaction confirmation operation
+        /// It can be get from Przelewy24 transaction pannel from "MyData" tab.
+        /// </summary>
         [Required(ErrorMessage="CrcKey is nessessary")]
         public string CrcKey { get; set; }
-
+        /// <summary>
+        /// Determines if class will work with sandbox(true) or production(false) account
+        /// </summary>
         public bool SandboxMode { get; set; }
+        /// <summary>
+        /// Describes an address of action for transaction verification.
+        /// You should set here an address of where you will get verification data from Przelewy24
+        /// and run VerifyTransaction method from this class with received parameters.
+        /// </summary>
+        public string P24_url_status { get; set; }
 
+        // TODO
+        // Przenieść ten badziew do klienta - do vievmodel
+        // i pogadać o tym z Dawidem
+        /// <summary>
+        /// Determines, if client have to redirect automatically to registered transaction
+        /// </summary>
+        public bool AutomaticRedirection { get; set; }
+
+
+        /// <summary>
+        /// Transaction Register Url for current class mode
+        /// It is used for register transaction and get TOKEN
+        /// </summary>
         public string UrlTrnRegister { get { return GetFirstPartOfUrl() + trnRegister; } }
+        /// <summary>
+        /// Trasaction Request Ulr for current class mode
+        /// It is used for redirect customer for transaction specified by TOKEN
+        /// </summary>
         public string UrlTrnRequest { get { return GetFirstPartOfUrl() + trnRequest; } }
+        /// <summary>
+        /// Test connection Url
+        /// It is used for verify, if PosId and CrcKey are correct for current class mode
+        /// </summary>
         public string UrlTestConnection { get { return GetFirstPartOfUrl() + testConnection; } }
+        /// <summary>
+        /// Transacion verification Url.
+        /// It is used for verification of transaction
+        /// </summary>
         public string UrlTrnVerify  { get { return GetFirstPartOfUrl() + trnVerify; } }
+        public string UrlDirect { get { return GetFirstPartOfUrl() + trnDirect; } }
 
         public IP24Db TransactionDb { get; set; }
 
