@@ -26,7 +26,6 @@ namespace Przelewy24
 
 
         #region Properties
-        
         //
         // Transaction data
         //
@@ -119,7 +118,13 @@ namespace Przelewy24
         public string P24_url_status
         {
             get { return this.GetParameter<string>("p24_url_status"); }
-            set { this.SetParameter<string>("p24_url_status", value); }
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                    RemoveParameter("p24_url_status");
+                else
+                    this.SetParameter<string>("p24_url_status", value);
+            }
         } // string(250)   STATUS
         public int P24_time_limit
         {
@@ -218,6 +223,7 @@ namespace Przelewy24
             AllConstructorsOperations();
             this.parent = przelewy24; 
             SetUniqueSessionId(SessionIdGenerationMode.time, "");
+            this.P24_url_status = parent.P24_url_status;
         }
 
         public Transaction (
@@ -236,6 +242,7 @@ namespace Przelewy24
         {
             AllConstructorsOperations();
             this.parent = parent;
+            this.P24_url_status = this.parent.P24_url_status;
 
             SetUniqueSessionId (generationMode, sessionId);
             this.P24_amount = amount;
@@ -459,9 +466,9 @@ namespace Przelewy24
 
         public void RemoveParameter (string parameterName)
         {
-            var result = this.parameters.Select (n => n).Where (n => n.Name == parameterName).FirstOrDefault ();
-            if (result != null)
-                this.parameters.Remove (result);
+            var result = this.parameters.Select(n => n).Where(n => n.Name == parameterName);
+            foreach (IParameter p in result)
+                this.parameters.Remove(p);
         }
         
         #endregion
