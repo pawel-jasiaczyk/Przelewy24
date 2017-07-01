@@ -194,8 +194,15 @@ namespace Przelewy24
             get { return this.parent; }
             set { this.parent = value; }
         }
-
+        
+        // TODO
+        // To jest register response. Zmienić to.
+        // Zmienić całą klasę
         public P24Response P24Response { get; private set; }
+
+        // TODO
+        // Umożliwić rozpoznanie statusu transakcji i odczyt różnych błędów
+        // Specjalny obiekt do tego
 
         #endregion
 
