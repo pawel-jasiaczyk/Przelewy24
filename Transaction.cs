@@ -24,8 +24,21 @@ namespace Przelewy24
 
         #endregion
 
-
+        //
+        // Merchant data
+        //
         #region Properties
+        public int P24_merchant_id
+        {
+            get { return this.GetParameter<int>("p24_merchant_id"); }
+            private set { this.SetParameter<int>("p24_merchant_id", value); }
+        }
+        public int P24_pos_id
+        {
+            get { return this.GetParameter<int>("p24_pos_id"); }
+            private set { this.SetParameter<int>("p24_pos_id", value); }
+        }
+
         //
         // Transaction data
         //
@@ -204,12 +217,23 @@ namespace Przelewy24
 
         #region Constructors
 
-        private void AllConstructorsOperations()
+        private void AllConstuctorsInitialOperations()
         {
             this.parameters = new List<IParameter> ();
             this.SetParameter ("p24_api_version", "3.2");
             TransactionsNumber++;
             this.ThisTransactionNumber = TransactionsNumber;
+        }
+
+
+        private void AllConstructorsFinalOperations()
+        {
+            if (this.parent != null)
+            {
+                this.P24_merchant_id = parent.MerchantId;
+                this.P24_pos_id = parent.PosId;
+                this.P24_url_status = parent.P24_url_status;
+            }
         }
 
 
@@ -222,10 +246,10 @@ namespace Przelewy24
         
         public Transaction(Przelewy24 przelewy24)
         {
-            AllConstructorsOperations();
+            AllConstuctorsInitialOperations();
             this.parent = przelewy24; 
             SetUniqueSessionId(SessionIdGenerationMode.time, "");
-            this.P24_url_status = parent.P24_url_status;
+            this.AllConstructorsFinalOperations();
         }
 
         public Transaction (
@@ -242,9 +266,9 @@ namespace Przelewy24
             string urlReturn 
             )
         {
-            AllConstructorsOperations();
+            AllConstuctorsInitialOperations();
             this.parent = parent;
-            this.P24_url_status = this.parent.P24_url_status;
+            this.AllConstructorsFinalOperations();
 
             SetUniqueSessionId (generationMode, sessionId);
             this.P24_amount = amount;
@@ -333,11 +357,7 @@ namespace Przelewy24
                 Przelewy24.CalculateRegisterSign 
                 (this.P24_session_id, parent.PosId, this.P24_amount, this.P24_currency, parent.CrcKey);
             SetRegisterSign();
-            var values = new Dictionary<string, string> ()
-            {
-                {"p24_merchant_id", parent.MerchantId.ToString() },
-                {"p24_pos_id", parent.PosId.ToString() }
-            };
+            var values = new Dictionary<string, string>();
 
             foreach(IParameter param in this.parameters)
             {
