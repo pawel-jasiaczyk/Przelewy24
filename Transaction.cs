@@ -179,14 +179,9 @@ namespace Przelewy24
         { 
             get 
             {
-                return Przelewy24.CalculateRegisterSign (
-                    this.P24_session_id, 
-                    parent.MerchantId, 
-                    this.P24_amount, 
-                    this.P24_currency, 
-                    parent.CrcKey
-                 );
+                return this.SetRegisterSign();
             } 
+            private set { this.SetParameter("p24_sign", value); }
         }
 
         public Przelewy24 P24 
@@ -479,6 +474,35 @@ namespace Przelewy24
         }
 
         #endregion
+
+        #region Sign methods
+
+        public string CalculateRegisterSign()
+        {
+             string registerSign = Przelewy24.CalculateRegisterSign (
+                this.P24_session_id, 
+                parent.MerchantId, 
+                this.P24_amount, 
+                this.P24_currency, 
+                parent.CrcKey
+             );
+
+            return registerSign;
+        }
+
+        public string SetRegisterSign()
+        {
+            this.RegisterSign = CalculateRegisterSign();
+            return this.RegisterSign;
+        }
+
+        public string SetRegisterSign(string registerSign)
+        {
+            this.RegisterSign = registerSign;
+            return this.RegisterSign;
+        }
+
+        #endregnion
 
 
         #region Override Methods
