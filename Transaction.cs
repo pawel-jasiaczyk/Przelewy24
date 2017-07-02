@@ -89,6 +89,14 @@ namespace Przelewy24
         { 
             get { return GetParameter<string>("p24_api_version"); } 
         }
+        public string P24_sign 
+        { 
+            get 
+            {
+                return this.SetRegisterSign();
+            } 
+            private set { this.SetParameter("p24_sign", value); }
+        }
 
         // Parameters requied for credit card transactions
         public string P24_client 
@@ -101,7 +109,7 @@ namespace Przelewy24
             get { return GetParameter<string> ("p24_address"); }
             set { SetParameter<string> ("p24_address", value); }
         }
-        public string P24_zip 
+        public string P24_zip
         {
             get { return GetParameter<string> ("p24_zip"); }
             set { SetParameter<string> ("p24_zip", value); }
@@ -188,14 +196,6 @@ namespace Przelewy24
         public int FullOrderId { get; set; }
 
         // Generated data
-        public string RegisterSign 
-        { 
-            get 
-            {
-                return this.SetRegisterSign();
-            } 
-            private set { this.SetParameter("p24_sign", value); }
-        }
 
         public Przelewy24 P24 
         { 
@@ -495,6 +495,7 @@ namespace Przelewy24
 
         #endregion
 
+
         #region Sign methods
 
         public string CalculateRegisterSign()
@@ -513,7 +514,7 @@ namespace Przelewy24
         public string SetRegisterSign()
         {
             string registerSign = CalculateRegisterSign();
-            this.RegisterSign = registerSign;
+            this.P24_sign = registerSign;
             return registerSign;
         }
 
@@ -526,17 +527,36 @@ namespace Przelewy24
         public override string ToString()
         {
             StringBuilder stb = new StringBuilder();
-            stb.Append("Transaction:\n[\n");
+
+            stb.AppendLine("Transaction:");
+            stb.AppendLine("[");
+
+            stb.AppendLine("\tAdditional settinsg");
+            stb.AppendLine("\t[");
+            stb.AppendLine(string.Format("\t\t\"SessionIdAdditionalData\" = \"{0}\"", this.SessionIdAdditionalData));
+            stb.AppendLine(string.Format("\t\t\"ThisTransactionNumber\" = \"{0}\"", this.ThisTransactionNumber));
+            stb.AppendLine(string.Format("\t\t\"ShortOrderId\" = \"{0}\"", this.ShortOrderId));
+            stb.AppendLine(string.Format("\t\t\"FullOrderId\" = \"{0}\"", this.FullOrderId));
+            stb.AppendLine("\t]");
+
+            stb.AppendLine();
+
+            stb.AppendLine("\tParameters");
+            stb.AppendLine("\t[");
             for(int i = 0; i < parameters.Count; i++)
             {
                 IParameter parameter = parameters[i];
-                stb.Append(string.Format("\t{0}", parameter.ToString()));
-                if(i < parameters.Count - 1)
-                {
-                    stb.Append("\n");
-                }
+                stb.AppendLine(string.Format("\t\t{0}", parameter.ToString()));
+                //if(i < parameters.Count - 1)
+                //{
+                //    stb.AppendLine();
+                //}
             }
-            stb.Append("\n]");
+            stb.AppendLine("\t]");
+
+            stb.AppendLine("]");
+
+
             return stb.ToString();
         }
 
