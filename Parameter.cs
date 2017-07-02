@@ -18,6 +18,12 @@ namespace Przelewy24
             this.Name = name;
             this.Value = value;
         }
+
+        public override string ToString()
+        {
+            string result = string.Format("[Name={0}, Value={1}]", this.Name, this.StringValue);
+            return result;
+        }
     }
 
     public interface IParameter

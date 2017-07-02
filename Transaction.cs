@@ -477,7 +477,31 @@ namespace Przelewy24
             foreach (IParameter p in result)
                 this.parameters.Remove(p);
         }
-        
+
         #endregion
+
+
+        #region Override Methods
+
+        public override string ToString()
+        {
+            StringBuilder stb = new StringBuilder();
+            stb.Append("Transaction:\n[\n");
+            for(int i = 0; i < parameters.Count; i++)
+            {
+                IParameter parameter = parameters[i];
+                stb.Append(string.Format("\t{0}", parameter.ToString()));
+                if(i < parameters.Count - 1)
+                {
+                    stb.Append("\n");
+                }
+            }
+            stb.Append("\n]");
+            return stb.ToString();
+        }
+
+
+        #endregion
+
     }
 }
