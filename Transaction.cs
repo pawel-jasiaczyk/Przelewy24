@@ -332,11 +332,11 @@ namespace Przelewy24
             string sign = 
                 Przelewy24.CalculateRegisterSign 
                 (this.P24_session_id, parent.PosId, this.P24_amount, this.P24_currency, parent.CrcKey);
+            SetRegisterSign();
             var values = new Dictionary<string, string> ()
             {
                 {"p24_merchant_id", parent.MerchantId.ToString() },
-                {"p24_pos_id", parent.PosId.ToString() },
-                {"p24_sign", sign}
+                {"p24_pos_id", parent.PosId.ToString() }
             };
 
             foreach(IParameter param in this.parameters)
@@ -492,17 +492,13 @@ namespace Przelewy24
 
         public string SetRegisterSign()
         {
-            this.RegisterSign = CalculateRegisterSign();
-            return this.RegisterSign;
-        }
-
-        public string SetRegisterSign(string registerSign)
-        {
+            string registerSign = CalculateRegisterSign();
             this.RegisterSign = registerSign;
-            return this.RegisterSign;
+            return registerSign;
         }
 
-        #endregnion
+
+        #endregion
 
 
         #region Override Methods
