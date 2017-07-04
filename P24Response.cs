@@ -65,6 +65,33 @@ namespace Przelewy24
                 this.Error = "Wrong response string";
             }
         }
-
+        
+        // Need tests
+        public override string ToString()
+        {
+            StringBuilder stb = new StringBuilder();
+            stb.AppendLine("Response");
+            stb.AppendLine("[");
+            stb.AppendLine(String.Format("\tOK = {0}", OK.ToString()));
+            stb.AppendLine(String.Format("\tError = {0}", !String.IsNullOrEmpty(this.Error) ? this.Error.ToString() : ""));
+            stb.AppendLine(String.Format("\tToken = {0}", !String.IsNullOrEmpty(this.Token) ? this.Token.ToString() : ""));
+            stb.AppendLine(String.Format("\tResponseString = {0}", !String.IsNullOrEmpty(this.ResponseString) ? this.ResponseString : ""));
+            stb.AppendLine("\tErrors:");
+            if (this.Errors.Count > 0)
+            {
+                stb.AppendLine("\t[");
+                foreach(KeyValuePair<string, string> pair in this.Errors)
+                {
+                    stb.AppendLine(String.Format("\t\t{0} = {1}", pair.Key, pair.Value));
+                }
+                stb.AppendLine("\t]");
+            }
+            else
+            {
+                stb.AppendLine("\t\t\tEmpty list - there are no eroors");
+            }
+            stb.AppendLine("]");
+            return stb.ToString();
+        }
     }
 }
