@@ -10,7 +10,16 @@ namespace Przelewy24
     {
         public string Name { get; set; }
         public T Value { get; set; }
-        public string StringValue { get { return this.Value.ToString (); } }
+        public string StringValue
+        {
+            get
+            {
+                if (this.Value == null)
+                    return "";
+                else
+                    return this.Value.ToString();
+            }
+        }
         public Type Type { get { return typeof(T); } }
 
         public Parameter(string name, T value)

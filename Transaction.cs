@@ -373,11 +373,16 @@ namespace Przelewy24
             return responseString;
         }
 
-        public async Task<P24Response> RegisterTransaction(bool SaveToDatabase)
+        public async Task<P24Response> RegisterTransaction(bool saveToDatabase)
+        {
+            return await RegisterTransaction(saveToDatabase, false);
+        }
+
+        public async Task<P24Response> RegisterTransaction(bool saveToDatabase, bool saveOnlyCorrectTransactions)
         {
             string respString = await RegisterTransaction();
             P24Response p24Resp = new P24Response(respString);
-            if (SaveToDatabase)
+            if (saveToDatabase)
             {
                 if (this.P24.TransactionDb == null)
                 {
@@ -387,7 +392,7 @@ namespace Przelewy24
                 {
                     try
                     {
-                        if (p24Resp.OK)
+                        if (p24Resp.OK || !saveOnlyCorrectTransactions)
                         {
                             this.P24.TransactionDb.SaveTransaction(this);
                         }
@@ -547,14 +552,14 @@ namespace Przelewy24
             {
                 IParameter parameter = parameters[i];
                 stb.AppendLine(string.Format("\t\t{0}", parameter.ToString()));
-                //if(i < parameters.Count - 1)
-                //{
-                //    stb.AppendLine();
-                //}
             }
             stb.AppendLine("\t]");
 
+            if (this.P24Response != null)
+                stb.AppendLine(String.Format("P24Response = {0}", this.P24Response.ToString()));
+
             stb.AppendLine("]");
+
 
 
             return stb.ToString();

@@ -66,7 +66,6 @@ namespace Przelewy24
             }
         }
         
-        // Need tests
         public override string ToString()
         {
             StringBuilder stb = new StringBuilder();
@@ -82,13 +81,13 @@ namespace Przelewy24
                 stb.AppendLine("\t[");
                 foreach(KeyValuePair<string, string> pair in this.Errors)
                 {
-                    stb.AppendLine(String.Format("\t\t{0} = {1}", pair.Key, pair.Value));
+                    stb.AppendLine(String.Format("\t\t{0} = {1}", pair.Key, !String.IsNullOrEmpty(pair.Value) ? pair.Value : ""));
                 }
                 stb.AppendLine("\t]");
             }
             else
             {
-                stb.AppendLine("\t\t\tEmpty list - there are no eroors");
+                stb.AppendLine("\t\tEmpty list - there are no eroors");
             }
             stb.AppendLine("]");
             return stb.ToString();
