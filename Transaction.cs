@@ -208,7 +208,7 @@ namespace Przelewy24
         // TODO
         // To jest register response. Zmienić to.
         // Zmienić całą klasę
-        public P24Response P24Response { get; private set; }
+        public P24Response P24Response { get; set; }
 
         // TODO
         // Umożliwić rozpoznanie statusu transakcji i odczyt różnych błędów
@@ -352,27 +352,11 @@ namespace Przelewy24
 
         #region Server connection methods
 
+        // Need to test
+
         public async Task<string> RegisterTransaction()
         {
-            HttpClient client = new HttpClient();
-            string sign = 
-                Przelewy24.CalculateRegisterSign 
-                (this.P24_session_id, parent.PosId, this.P24_amount, this.P24_currency, parent.CrcKey);
-            SetRegisterSign();
-            var values = new Dictionary<string, string>();
-
-            foreach(IParameter param in this.parameters)
-            {
-                values.Add (param.Name, param.StringValue);
-            }
-
-            var content = new FormUrlEncodedContent(values);
-
-            var response = await client.PostAsync (parent.UrlTrnRegister, content);
-
-            string responseString = await response.Content.ReadAsStringAsync ();
-
-            return responseString;
+            return await parent.RegisterTransaction(this);
         }
 
         public async Task<P24Response> RegisterTransaction(bool saveToDatabase)
@@ -383,7 +367,6 @@ namespace Przelewy24
         public async Task<P24Response> RegisterTransaction(bool saveToDatabase, bool saveOnlyCorrectTransactions)
         {
             string respString = await RegisterTransaction();
-            P24Response p24Resp = new P24Response(respString);
             if (saveToDatabase)
             {
                 if (this.P24.TransactionDb == null)
@@ -394,7 +377,7 @@ namespace Przelewy24
                 {
                     try
                     {
-                        if (p24Resp.OK || !saveOnlyCorrectTransactions)
+                        if (this.P24Response.OK || !saveOnlyCorrectTransactions)
                         {
                             this.P24.TransactionDb.SaveTransaction(this);
                         }
@@ -405,8 +388,7 @@ namespace Przelewy24
                     }
                 }
             }
-            this.P24Response = p24Resp;
-            return p24Resp;
+            return this.P24Response;
         }
 
         public string GetRequestLink()
@@ -498,6 +480,12 @@ namespace Przelewy24
             var result = this.parameters.Select(n => n).Where(n => n.Name == parameterName);
             foreach (IParameter p in result)
                 this.parameters.Remove(p);
+        }
+
+        
+        public IParameter[] GetParameters()
+        {
+            return this.parameters.ToArray();
         }
 
         #endregion

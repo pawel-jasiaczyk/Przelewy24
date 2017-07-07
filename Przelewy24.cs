@@ -167,6 +167,8 @@ namespace Przelewy24
 
         #region Public Methods
 
+        #region TestConnection
+
         public async Task<string> TestConnection()
         {
             HttpClient client = new HttpClient();
@@ -189,6 +191,11 @@ namespace Przelewy24
             return responseString;
         }
 
+
+        #endregion
+
+
+        #region Verify Transaction
 
         public async Task<bool> VerifyTransaction(
             string p24_merchant_id, 
@@ -237,6 +244,68 @@ namespace Przelewy24
             }
             return false;
         }
+
+
+        #endregion
+
+
+        #region Register Transaction
+
+        // Need to test
+
+        public async Task<string> RegisterTransaction(IDictionary<string, string> parametares)
+        {
+            HttpClient client = new HttpClient();
+            var content = new FormUrlEncodedContent(parametares);
+            var response = await client.PostAsync(this.UrlTrnRegister, content);
+            string responseString = await response.Content.ReadAsStringAsync();
+            return responseString;
+        }
+
+
+        public async Task<string> RegisterTransaction(IEnumerable<IParameter> parameters)
+        {
+            Dictionary<string, string> DParams = new Dictionary<string, string>();
+            foreach (IParameter param in parameters)
+            {
+                DParams.Add(param.Name, param.StringValue);
+            }
+            return await RegisterTransaction(DParams);
+        }
+
+
+        public async Task<string> RegisterTransaction(Transaction transaction)
+        {
+            transaction.SetRegisterSign();
+            string responseString =  await RegisterTransaction(transaction.GetParameters());
+            try
+            {
+                P24Response r = new P24Response(responseString);
+                transaction.P24Response = r;
+            }
+            catch
+            {
+                throw;
+            }
+            return responseString;
+        }
+
+        /*
+
+        public async Task<P24Response> RegisterTransaction(IDictionary<string, string> parameters, bool saveToDatabase, bool saveOnlyCorrectTransaction)
+        {
+
+        }
+
+
+        public async Task<P24Response> RegisterTransaction(Transaction transaction, bool saveToDatabase, bool saveOnlyCorrecteTransaction)
+        {
+
+        }
+
+        */
+
+        #endregion
 
 
         #endregion
