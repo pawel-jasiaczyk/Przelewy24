@@ -489,6 +489,7 @@ namespace Przelewy24
             return this.parameters.ToArray();
         }
 
+
         #endregion
 
 

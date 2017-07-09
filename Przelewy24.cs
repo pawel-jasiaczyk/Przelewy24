@@ -34,6 +34,30 @@ namespace Przelewy24
         #endregion
 
 
+        #region Static Properties
+
+        #region Url
+
+        // SandBox Url's
+        public static string SandboxTestUrl { get { return protocol + sandbox + testConnection; } }
+        public static string SandboxRegisterUrl { get { return protocol + sandbox + trnRegister; } }
+        public static string SandboxRequestUrl { get { return protocol + sandbox + trnRequest; } }
+        public static string SandboxVerifyUrl { get { return protocol + sandbox + trnVerify; } }
+        public static string SandboxDirectUrl { get { return protocol + sandbox + trnDirect; } }
+
+        // Secure Url's
+        public static string SecureTestUrl { get { return protocol + secure + testConnection; } }
+        public static string SecureRegisterUrl { get { return protocol + secure + trnRegister; } }
+        public static string SecureRequestUrl { get { return protocol + secure + trnRequest; } }
+        public static string SecureVerifyUrl { get { return protocol + secure + trnVerify; } }
+        public static string SecureDirectUrl { get { return protocol + secure + trnDirect; } }
+
+        #endregion
+
+
+        #endregion
+
+
         #region Properties
 
         /// <summary>
@@ -259,13 +283,9 @@ namespace Przelewy24
         /// </summary>
         /// <param name="parametares">Set of parameters</param>
         /// <returns>Response from Przelewy24. String contains TOKEN or list of errors</returns>
-        public async Task<string> RegisterTransaction(IDictionary<string, string> parametares)
+        public async Task<string> RegisterTransaction(IDictionary<string, string> parameters)
         {
-            HttpClient client = new HttpClient();
-            var content = new FormUrlEncodedContent(parametares);
-            var response = await client.PostAsync(this.UrlTrnRegister, content);
-            string responseString = await response.Content.ReadAsStringAsync();
-            return responseString;
+            return await Przelewy24.RegisterTransaction(parameters, this.SandboxMode);
         }
 
 
@@ -279,17 +299,13 @@ namespace Przelewy24
         /// <returns>Response from Przelewy24. String contains TOKEN or list of errors</returns>
         public async Task<string> RegisterTransaction(IEnumerable<IParameter> parameters)
         {
-            Dictionary<string, string> DParams = new Dictionary<string, string>();
-            foreach (IParameter param in parameters)
-            {
-                DParams.Add(param.Name, param.StringValue);
-            }
-            return await RegisterTransaction(DParams);
+            return await Przelewy24.RegisterTransaction(parameters, this.SandboxMode);
         }
 
 
         /// <summary>
         /// Register specified Transaction in Przelewy24 for mode specified in this Przelewy24 object
+        /// Sets transction P24_sign and P24Response
         /// This method uses only parameters from give transaction
         /// It does not chec if Merchant ID nad POS ID are the same as in this Przelewy24 object
         /// </summary>
@@ -297,11 +313,7 @@ namespace Przelewy24
         /// <returns>P24Response object with data about Token or Errors</returns>
         public async Task<P24Response> RegisterTransaction(Transaction transaction)
         {
-            transaction.SetRegisterSign();
-            string responseString =  await RegisterTransaction(transaction.GetParameters());
-            P24Response response = new P24Response(responseString);
-            transaction.P24Response = response;
-            return response;
+            return await Przelewy24.RegisterTransaction(transaction, this.SandboxMode);
         }
 
 
@@ -436,6 +448,67 @@ namespace Przelewy24
 
         #endregion
 
+
+        #region Register Transaction
+
+        /// <summary>
+        /// Register transaction in selected mode
+        /// It uses only parameters given in input IDictionary
+        /// This method do not create Transaction Object
+        /// </summary>
+        /// <param name="parametares">Set of parameters</param>
+        /// <param name="sandboxMode">Determine if transaction will be registered for sandbox(true) or production(false)</param>
+        /// <returns>Response from Przelewy24. String contains TOKEN or list of errors</returns>
+        public static async Task<string> RegisterTransaction(IDictionary<string, string> parameters, bool sandboxMode)
+        {
+            HttpClient client = new HttpClient();
+            var content = new FormUrlEncodedContent(parameters);
+            var response = await client.PostAsync(
+                sandboxMode ? SandboxRegisterUrl : SecureRegisterUrl, 
+                content
+                );
+            string responseString = await response.Content.ReadAsStringAsync();
+            return responseString;
+        }
+
+
+        /// <summary>
+        /// Register transaction in selected mode
+        /// It uses only parameters given in input IEnumerable parameters
+        /// This method do not create transaction object
+        /// </summary>
+        /// <param name="parameters">Set of parameters</param>
+        /// <param name="sandboxMode">Determine if transaction will be registered for sandbox(true) or production(false)</param>
+        /// <returns>Response from Przelewy24. String contains TOKEN or list of errors</returns>>
+        public static async Task<string> RegisterTransaction(IEnumerable<IParameter> parameters, bool sandboxMode)
+        {
+            Dictionary<string, string> DParams = new Dictionary<string, string>();
+            foreach (IParameter param in parameters)
+            {
+                DParams.Add(param.Name, param.StringValue);
+            }
+            return await RegisterTransaction(DParams, sandboxMode);
+        }
+
+        /// <summary>
+        /// Register specified Transaction in Przelewy24 for specified mode
+        /// Sets transction P24_sign and P24Response
+        /// This method uses only parameters from give transaction
+        /// </summary>
+        /// <param name="transaction">Transaction to register</param>
+        /// <param name="sandboxMode">Determine if transaction will be registered for sandbox(true) or production(false)</param>
+        /// <returns>P24Response object with data about Token or Errors</returns>
+        public static async Task<P24Response> RegisterTransaction(Transaction transaction, bool sandboxMode)
+        {
+            transaction.SetRegisterSign();
+            string responseString =  await RegisterTransaction(transaction.GetParameters(), sandboxMode);
+            P24Response response = new P24Response(responseString);
+            transaction.P24Response = response;
+            return response;
+        }
+
+
+        #endregion
 
         #endregion
     }
