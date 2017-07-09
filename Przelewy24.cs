@@ -251,8 +251,14 @@ namespace Przelewy24
 
         #region Register Transaction
 
-        // Need to test
-
+        /// <summary>
+        /// Register transaction with mode set in this Przelewy24 object
+        /// It uses only parameters given in input IDictionary
+        /// Do not check if Merchant ID and POS ID are the same as in this Przelewy24 object
+        /// This method do not create Transaction Object
+        /// </summary>
+        /// <param name="parametares">Set of parameters</param>
+        /// <returns>Response from Przelewy24. String contains TOKEN or list of errors</returns>
         public async Task<string> RegisterTransaction(IDictionary<string, string> parametares)
         {
             HttpClient client = new HttpClient();
@@ -263,6 +269,14 @@ namespace Przelewy24
         }
 
 
+        /// <summary>
+        /// Register transaction with mode set in this Przelewy24 object
+        /// It uses only parameters given in input IEnumerable parameters
+        /// Do not check if Merchant ID and POS ID are the same as in this Przelewy24 object
+        /// This method do not create transaction object
+        /// </summary>
+        /// <param name="parameters">Set of parameters</param>
+        /// <returns>Response from Przelewy24. String contains TOKEN or list of errors</returns>
         public async Task<string> RegisterTransaction(IEnumerable<IParameter> parameters)
         {
             Dictionary<string, string> DParams = new Dictionary<string, string>();
@@ -274,36 +288,53 @@ namespace Przelewy24
         }
 
 
-        public async Task<string> RegisterTransaction(Transaction transaction)
+        /// <summary>
+        /// Register specified Transaction in Przelewy24 for mode specified in this Przelewy24 object
+        /// This method uses only parameters from give transaction
+        /// It does not chec if Merchant ID nad POS ID are the same as in this Przelewy24 object
+        /// </summary>
+        /// <param name="transaction">Transaction to register</param>
+        /// <returns>P24Response object with data about Token or Errors</returns>
+        public async Task<P24Response> RegisterTransaction(Transaction transaction)
         {
             transaction.SetRegisterSign();
             string responseString =  await RegisterTransaction(transaction.GetParameters());
-            try
-            {
-                P24Response r = new P24Response(responseString);
-                transaction.P24Response = r;
-            }
-            catch
-            {
-                throw;
-            }
-            return responseString;
-        }
-
-        /*
-
-        public async Task<P24Response> RegisterTransaction(IDictionary<string, string> parameters, bool saveToDatabase, bool saveOnlyCorrectTransaction)
-        {
-
+            P24Response response = new P24Response(responseString);
+            transaction.P24Response = response;
+            return response;
         }
 
 
+        /// <summary>
+        /// Register specified Transaction in Przelewy24 for mode specified in this Przelewy24 object
+        /// This method uses only parameters from give transaction
+        /// It does not chec if Merchant ID nad POS ID are the same as in this Przelewy24 object
+        /// Allow to save transaction to database specified in TransactionDb property
+        /// </summary>
+        /// <param name="transaction">Transaction to register</param>
+        /// <param name="saveToDatabase">If sets, transaction will be saved in TransactionDb</param>
+        /// <param name="saveOnlyCorrecteTransaction">If sets, only Correct transactions will be saved - will ignore transaction with errors</param>
+        /// <returns>P24Response object with data about Token or Errors</returns>
         public async Task<P24Response> RegisterTransaction(Transaction transaction, bool saveToDatabase, bool saveOnlyCorrecteTransaction)
         {
-
+            P24Response response = await RegisterTransaction(transaction);
+            if (saveToDatabase)
+            {
+                if (response.OK || !saveOnlyCorrecteTransaction)
+                {
+                   try
+                    {
+                        this.TransactionDb.SaveTransaction(transaction);
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+                }
+            }
+            return response;
         }
 
-        */
 
         #endregion
 

@@ -356,7 +356,8 @@ namespace Przelewy24
 
         public async Task<string> RegisterTransaction()
         {
-            return await parent.RegisterTransaction(this);
+            P24Response response =  await parent.RegisterTransaction(this);
+            return response.ResponseString;
         }
 
         public async Task<P24Response> RegisterTransaction(bool saveToDatabase)
