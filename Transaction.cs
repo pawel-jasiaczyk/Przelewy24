@@ -340,7 +340,30 @@ namespace Przelewy24
             string urlReturn 
             )
             :this(
-                new Przelewy24(merchantId, posId, crcKey, sandboxMode),
+                new Przelewy24(merchantId, posId, crcKey, sandboxMode ? Przelewy24.Mode.sandbox : Przelewy24.Mode.secure),
+                generationMode, sessionId,amount,currency,description,email,country,urlReturn
+            )
+        { }
+
+
+        public Transaction (
+            // merchant data
+            int merchantId,
+            int posId,
+            string crcKey,
+            Przelewy24.Mode mode,
+            // transaction data
+            SessionIdGenerationMode generationMode,
+            string sessionId,
+            int amount, 
+            string currency, 
+            string description,
+            string email, 
+            string country, 
+            string urlReturn 
+            )
+            :this(
+                new Przelewy24(merchantId, posId, crcKey, mode),
                 generationMode, sessionId,amount,currency,description,email,country,urlReturn
             )
         { }
