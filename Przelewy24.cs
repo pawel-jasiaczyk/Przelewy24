@@ -13,6 +13,13 @@ namespace Przelewy24
 {
     public class Przelewy24
     {
+        #region Inside Definitions
+
+        public enum Mode { secure, sandbox}
+
+
+        #endregion
+
 
         #region Static Fields
 
@@ -30,6 +37,7 @@ namespace Przelewy24
         private static string trnRequest = ".przelewy24.pl/trnRequest";
         private static string trnVerify = ".przelewy24.pl/trnVerify";
         private static string trnDirect = ".przelewy24.pl/trnDirect";
+
 
         #endregion
 
