@@ -15,7 +15,17 @@ namespace Przelewy24
     {
         #region Inside Definitions
 
-        public enum Mode { secure, sandbox}
+        public enum Mode
+        {
+            /// <summary>
+            /// Use this value for production account
+            /// </summary>
+            secure,
+            /// <summary>
+            /// Use this value for sandbox account
+            /// </summary>
+            sandbox
+        }
 
 
         #endregion
@@ -109,7 +119,6 @@ namespace Przelewy24
                 else this.P24Mode = Mode.secure;
             }
         }
-        // Need Tests
         /// <summary>
         /// Determines if class will work with sandbox mode or production(secure) mode
         /// </summary>
