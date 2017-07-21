@@ -95,9 +95,10 @@ namespace Przelewy24
         { 
             get 
             {
-                return this.SetRegisterSign();
+                return this.GetParameter<string>("p24_sign");
+                    //this.SetRegisterSign();
             } 
-            private set { this.SetParameter("p24_sign", value); }
+            set { this.SetParameter("p24_sign", value); }
         }
 
         // Parameters requied for credit card transactions
@@ -285,7 +286,7 @@ namespace Przelewy24
         /// <summary>
         /// Create transaction and associated Przelewy24 class
         /// This Constructor was created in early version of project and
-        /// will be removed in final version
+        /// WILL BE REMOVE IN VERSION 1.2.0.0
         /// </summary>
         /// <param name="merchantId"></param>
         /// <param name="posId"></param>
@@ -377,20 +378,69 @@ namespace Przelewy24
 
         // Need to test
 
+        /// <summary>
+        /// Register transaction
+        /// If this.P24 != transaction will be register in mode set in this.P24
+        /// otherwise will throw null reference exception
+        /// WILL BE REMOVE IN VERSION 1.2.0.0
+        /// </summary>
+        /// <returns></returns>
+        [Obsolete]
         public async Task<string> RegisterTransaction()
         {
-            P24Response response =  await parent.RegisterTransaction(this);
+            P24Response response;
+            if (this.parent != null)
+            {
+                response = await parent.RegisterTransaction(this);
+            }
+            else
+            {
+                throw new NullReferenceException("P24 not set");
+            }
             return response.ResponseString;
         }
 
+
+        /// <summary>
+        /// WILL BE REMOVE IN VERSION 1.2.0.0
+        /// </summary>
+        /// <param name="mode"></param>
+        /// <param name="crc"></param>
+        /// <returns></returns>
+        [Obsolete]
+        public async Task<P24Response> RegisterTransaction(Przelewy24.Mode mode, string crc)
+        {
+            return await Przelewy24.RegisterTransaction(this, mode, crc);
+        }
+
+        /// <summary>
+        /// WILL BE REMOVE IN VERSION 1.2.0.0
+        /// /
+        /// </summary>
+        /// <param name="saveToDatabase"></param>
+        /// <returns></returns>
+        [Obsolete]
         public async Task<P24Response> RegisterTransaction(bool saveToDatabase)
         {
             return await RegisterTransaction(saveToDatabase, false);
         }
 
+
+        /// <summary>
+        /// 
+        /// WILL BE REMOVE IN VERSION 1.2.0.0
+        /// </summary>
+        /// <param name="saveToDatabase"></param>
+        /// <param name="saveOnlyCorrectTransactions"></param>
+        /// <returns></returns>
+        [Obsolete]
         public async Task<P24Response> RegisterTransaction(bool saveToDatabase, bool saveOnlyCorrectTransactions)
         {
-            string respString = await RegisterTransaction();
+            if (this.P24 == null)
+                throw new 
+                    NullReferenceException(
+                        string.Format("Transaction with session id {0} P24 parameter is null", this.P24_session_id));
+            await RegisterTransaction(this.P24.P24Mode, this.P24.CrcKey);
             if (saveToDatabase)
             {
                 if (this.P24.TransactionDb == null)
@@ -414,6 +464,7 @@ namespace Przelewy24
             }
             return this.P24Response;
         }
+
 
         public string GetRequestLink()
         {

@@ -32,9 +32,11 @@ namespace Przelewy24
 
 
         #region Static Fields
-
+        
+        /// WILL BE REMOVE IN VERSION 1.2.0.0
         [Obsolete]
         private static int numberOfINstances = 0;
+        /// WILL BE REMOVE IN VERSION 1.2.0.0
         [Obsolete]
         public int InstanceNumber { get; private set; }
 
@@ -103,6 +105,7 @@ namespace Przelewy24
         [Required(ErrorMessage="CrcKey is nessessary")]
         public string CrcKey { get; set; }
         /// <summary>
+        /// WILL BE REMOVE IN VERSION 1.2.0.0
         /// Determines if class will work with sandbox(true) or production(false) account
         /// </summary>
         [Obsolete]
@@ -183,6 +186,7 @@ namespace Przelewy24
 
         /// <summary>
         /// Create instance of Przelewy24 class
+        /// WILL BE REMOVE IN VERSION 1.2.0.0
         /// This constructor was created in early version of project and will be removed
         /// in final version
         /// </summary>
@@ -200,6 +204,7 @@ namespace Przelewy24
         /// Create instance of Przelewy24 class
         /// This constructor was created in early version of project and will be removed
         /// in final version
+        /// WILL BE REMOVE IN VERSION 1.2.0.0
         /// </summary>
         /// <param name="merchantId"></param>
         /// <param name="posId"></param>
@@ -214,6 +219,7 @@ namespace Przelewy24
             :this (merchantId, posId, crcKey, Mode.secure)
         { }
 
+        /// WILL BE REMOVE IN VERSION 1.2.0.0
         [Obsolete]
         public Przelewy24(int merchantId, int posId, string crcKey, bool sandboxMode)
         {
@@ -361,7 +367,7 @@ namespace Przelewy24
         /// <returns>P24Response object with data about Token or Errors</returns>
         public async Task<P24Response> RegisterTransaction(Transaction transaction)
         {
-            return await Przelewy24.RegisterTransaction(transaction, this.P24Mode);
+            return await Przelewy24.RegisterTransaction(transaction, this.P24Mode, this.CrcKey);
         }
 
 
@@ -538,6 +544,7 @@ namespace Przelewy24
             return await RegisterTransaction(DParams, mode);
         }
 
+
         /// <summary>
         /// Register specified Transaction in Przelewy24 for specified mode
         /// Sets transction P24_sign and P24Response
@@ -546,8 +553,16 @@ namespace Przelewy24
         /// <param name="transaction">Transaction to register</param>
         /// <param name="sandboxMode">Determine if transaction will be registered for sandbox(true) or production(false)</param>
         /// <returns>P24Response object with data about Token or Errors</returns>
-        public static async Task<P24Response> RegisterTransaction(Transaction transaction, Mode mode)
+        public static async Task<P24Response> RegisterTransaction(Transaction transaction, Mode mode, string crc)
         {
+            transaction.P24_sign = Przelewy24.CalculateRegisterSign
+                (
+                    transaction.P24_session_id,
+                    transaction.P24_merchant_id,
+                    transaction.P24_amount,
+                    transaction.P24_currency,
+                    crc
+                );
             transaction.SetRegisterSign();
             string responseString =  await RegisterTransaction(transaction.GetParameters(), mode);
             P24Response response = new P24Response(responseString);
